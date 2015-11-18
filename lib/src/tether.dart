@@ -1,8 +1,7 @@
 part of tether;
 
 abstract class Tether {
-  factory Tether.master(
-      Anchor anchor,
+  factory Tether.masterAnchor(Anchor anchor,
       {Map sessionData: const {},
       Reconnect reconnect}) {
     final messenger = new Messenger(anchor);
@@ -16,13 +15,35 @@ abstract class Tether {
     return tether;
   }
 
-  factory Tether.slave(Anchor anchor, {Reconnect reconnect}) {
+  factory Tether.slaveAnchor(Anchor anchor, {Reconnect reconnect}) {
     final messenger = new Messenger(anchor);
     final tether = new _Tether(reconnect: reconnect);
     messenger.listen('__handshake', (Session session) {
       tether._connect(messenger, session);
     });
     return tether;
+  }
+
+  factory Tether.spawnIsolate(void body(ports)) {
+    return new Tether.masterAnchor(new IsolateAnchor.spawn(body));
+  }
+
+  factory Tether.spawnIsolateUri(Uri uri, [List<String> arguments = const []]) {
+    return new Tether.masterAnchor(new IsolateAnchor.spawnUri(uri, arguments));
+  }
+
+  factory Tether.connectIsolate(ports) {
+    return new Tether.slaveAnchor(new IsolateAnchor.connect(ports));
+  }
+
+  factory Tether.master(Sink<String> sink, Stream<String> stream) {
+    final anchor = new SimpleAnchor(sink, stream);
+    return new Tether.masterAnchor(anchor);
+  }
+
+  factory Tether.slave(Sink<String> sink, Stream<String> stream) {
+    final anchor = new SimpleAnchor(sink, stream);
+    return new Tether.slaveAnchor(anchor);
   }
 
   Future send(String key, [payload]);

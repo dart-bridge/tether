@@ -1,30 +1,27 @@
-import 'package:tether/protocol.dart';
 import 'package:tether/tether.dart';
-import 'dart:async';
 
 main() async {
-  // 1. Create master tether
-  final tether = new Tether.master(new IsolateAnchor.spawn(slave));
+  final tether = new Tether.spawnIsolate(slave);
 
-  // 2. Wait for connection
-  await tether.onConnection;
+  handler([_]) {
+    tether.listen('greet', (String name) {
+      return "Heeeeere's $name!";
+    });
+  }
 
-  // 3. Use the tether
-  tether.listen('greet', (String name) {
-    return "Heeeeere's $name!";
-  });
+  handler(await tether.onConnection);
+  tether.onConnectionEstablished.listen(handler);
 }
 
 slave(ports) async {
-  // 1. Create master tether
-  final tether = new Tether.slave(new IsolateAnchor.connect(ports));
+  final tether = new Tether.connectIsolate(ports);
 
-  // 2. Wait for connection
-  await tether.onConnection;
+  handler([_]) async {
+    print(await tether.send('greet', 'Johnny'));
 
-  // 3. Use the tether
-  print(await tether.send('greet', 'Johnny'));
+    tether.close();
+  }
 
-  // 4. Isolate slave tethers need to be explicitly destroyed
-  tether.close();
+  handler(await tether.onConnection);
+  tether.onConnectionEstablished.listen(handler);
 }

@@ -1,7 +1,6 @@
 import 'package:testcase/testcase.dart';
 export 'package:testcase/init.dart';
 import 'package:tether/tether.dart';
-import 'package:tether/protocol.dart';
 import 'dart:async';
 
 class TetherTest implements TestCase {
@@ -11,16 +10,8 @@ class TetherTest implements TestCase {
   setUp() async {
     final masterController = new StreamController();
     final slaveController = new StreamController();
-    final masterAnchor = new SimpleAnchor(
-        masterController,
-        slaveController.stream
-    );
-    final slaveAnchor = new SimpleAnchor(
-        slaveController,
-        masterController.stream
-    );
-    master = new Tether.master(masterAnchor);
-    slave = new Tether.slave(slaveAnchor);
+    master = new Tether.master(masterController, slaveController.stream);
+    slave = new Tether.slave(slaveController, masterController.stream);
     await Future.wait([
       master.onConnection,
       slave.onConnection
