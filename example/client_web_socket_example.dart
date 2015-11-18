@@ -1,4 +1,3 @@
-import 'package:tether/tether.dart';
 import 'package:tether/http_client.dart';
 import 'dart:html';
 

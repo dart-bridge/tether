@@ -9,4 +9,6 @@ class Session {
   factory Session.generate(Map data) {
     return new Session(generateHash(length: 128), new Map.from(data));
   }
+
+  operator ==(Session other) => other is Session && other.id == id;
 }
