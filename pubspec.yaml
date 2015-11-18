@@ -1,0 +1,10 @@
+name: tether
+version: 0.1.0
+description: Bi-directional messaging abstraction
+author: Emil Persson <emil.n.persson@gmail.com>
+homepage: https://github.com/dart-bridge/tether
+environment:
+  sdk: ">=1.8.0 <2.0.0"
+dev_dependencies:
+  test: any
+  testcase: any
