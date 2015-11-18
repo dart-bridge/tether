@@ -117,6 +117,7 @@ tether.send('b', 'from a');
 // Side B
 tether.listen('b', print);
 tether.send('a', 'from b');
+```
 
 ### Full example
 ```dart
