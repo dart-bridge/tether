@@ -1,6 +1,8 @@
 part of tether.protocol;
 
 class Messenger {
+  static Serializer serializer;
+
   final Map<String, StreamController<Message>> _listeners = {};
   final Anchor _anchor;
 
@@ -24,13 +26,13 @@ class Messenger {
         'id': object.id,
         'data': serialize(object.data),
       };
-    return object;
+    return serializer?.serialize(object) ?? object;
   }
 
   Object deserialize(Object object) {
     if (object is Map && (object['isSession'] ?? false))
       return new Session(object['id'], deserialize(object['data']));
-    return object;
+    return serializer?.deserialize(object) ?? object;
   }
 
   Future send(String key, payload) {
