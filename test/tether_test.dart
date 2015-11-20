@@ -28,4 +28,12 @@ class TetherTest implements TestCase {
     });
     expect(await slave.send('x', 'y'), 'z');
   }
+
+  @test
+  it_can_listen_once() async {
+    master.listenOnce('x', (m) => m);
+    expect(await slave.send('x', 'y'), 'y');
+    master.listenOnce('x', (m) => '_$m');
+    expect(await slave.send('x', 'z'), '_z');
+  }
 }

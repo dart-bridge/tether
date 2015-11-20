@@ -5,7 +5,7 @@ abstract class Tethers {
 
   void registerHandler(handler(Tether tether));
 
-  void add(Anchor anchor);
+  void add(Anchor anchor, {Session session});
 
   void broadcast(String key, [payload]);
 
@@ -20,8 +20,8 @@ class _Tethers implements Tethers {
     _handlers.add(handler);
   }
 
-  void add(Anchor anchor) {
-    final tether = new Tether.masterAnchor(anchor);
+  void add(Anchor anchor, {Session session}) {
+    final tether = new Tether.masterAnchor(anchor, session: session);
     _tethers.add(tether);
     tether.onConnection.then((_) async {
       _runTetherThroughHandlers(tether);
