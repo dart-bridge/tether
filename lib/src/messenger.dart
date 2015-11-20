@@ -40,7 +40,7 @@ class Messenger {
     final message = new Message(key, serialize(payload));
     final returnSub = listen(message.returnKey, returnValue.complete);
     returnSub.onError((Message message) {
-      returnValue.completeError(message.payload);
+      returnValue.completeError(deserialize(message.payload));
     });
     _anchor.sink.add(message.serialize());
     return returnValue.future.then((_) async {
