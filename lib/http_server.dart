@@ -21,5 +21,9 @@ Tether webSocketTether(HttpRequest request) {
 
 Tether webSocketClientTether(String url) {
   final socket = WebSocket.connect(url);
-  return new Tether.slaveAnchor(new ServerWebSocketAnchor(socket));
+  return new Tether.slaveAnchor(new ServerWebSocketAnchor(socket),
+      reconnect: () async {
+        final socket = WebSocket.connect(url);
+        return new ServerWebSocketAnchor(socket);
+      });
 }

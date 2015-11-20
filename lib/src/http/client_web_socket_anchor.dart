@@ -1,9 +1,9 @@
 part of tether.http.client;
 
-class ServerWebSocketAnchor extends SocketAnchor {
+class ClientWebSocketAnchor extends SocketAnchor {
   final WebSocket _socket;
 
-  ServerWebSocketAnchor(this._socket) : super();
+  ClientWebSocketAnchor(this._socket) : super();
 
   void close() {
     _socket.close();

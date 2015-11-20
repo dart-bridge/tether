@@ -71,10 +71,10 @@ class Messenger {
       final payload = deserialize(message.payload);
       try {
         final returnValue = await handler(payload);
-        if (message.hasReturnKey)
+        if (message.hasReturnKey && isOpen)
           _send(message.returnKey, returnValue);
       } catch (error) {
-        if (message.hasReturnKey)
+        if (message.hasReturnKey && isOpen)
           sendError(message.returnKey, error);
       }
     });

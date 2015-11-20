@@ -13,9 +13,10 @@ class TethersTest implements TestCase {
 
   tearDown() {}
 
-  Future createTethers(
-      {master(Tether tether),
-      slave(Tether tether)}) async {
+  Future createTethers({
+  master(Tether tether),
+  slave(Tether tether)
+  }) async {
     final onHandlerCompletion = new Completer();
 
     tethers.registerHandler((tether) async {
@@ -25,7 +26,8 @@ class TethersTest implements TestCase {
 
     final masterController = new StreamController();
     final slaveController = new StreamController();
-    final masterAnchor = new SimpleAnchor(masterController, slaveController.stream);
+    final masterAnchor = new SimpleAnchor(
+        masterController, slaveController.stream);
     tethers.add(masterAnchor);
     final slaveAnchor = new SimpleAnchor(
         slaveController, masterController.stream);
@@ -52,7 +54,7 @@ class TethersTest implements TestCase {
     final completer = new Completer();
 
     await createTethers(
-        slave: (tether) async {
+        slave: (Tether tether) async {
           tether.listen('x', (_) {
             completer.complete();
           });
