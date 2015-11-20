@@ -2,14 +2,14 @@ part of tether;
 
 abstract class Tether {
   factory Tether.masterAnchor(Anchor anchor,
-      {Map sessionData: const {},
+      {Session session,
       Reconnect reconnect}) {
     final messenger = new Messenger(anchor);
-    final session = new Session.generate(new Map.from(sessionData));
+    final _session = session ?? new Session.generate({});
     final tether = new _Tether(reconnect: reconnect);
     messenger.onOpen.then((_) {
-      messenger.send('__handshake', session).then((_) {
-        tether._connect(messenger, session);
+      messenger.send('__handshake', _session).then((_) {
+        tether._connect(messenger, _session);
       });
     });
     return tether;
@@ -50,6 +50,8 @@ abstract class Tether {
 
   StreamSubscription listen(String key, Function listener);
 
+  void listenOnce(String key, Function listener);
+
   Stream get onConnectionEstablished;
 
   Stream get onConnectionLost;
@@ -81,6 +83,15 @@ class _Tether implements Tether {
 
   StreamSubscription listen(String key, Function listener) {
     return _messenger.listen(key, listener);
+  }
+
+  void listenOnce(String key, Function listener) {
+    StreamSubscription sub;
+    sub = listen(key, ([payload]) async {
+      final returnValue = await listener(payload);
+      await sub.cancel();
+      return returnValue;
+    });
   }
 
   void _connect(Messenger messenger, Session session) {
