@@ -16,10 +16,11 @@ class TethersTest implements TestCase {
   Future createTethers(
       {master(Tether tether),
       slave(Tether tether)}) async {
-    final completer = new Completer();
+    final onHandlerCompletion = new Completer();
+
     tethers.registerHandler((tether) async {
       await master?.call(tether);
-      completer.complete();
+      onHandlerCompletion.complete();
     });
 
     final masterController = new StreamController();
@@ -30,7 +31,7 @@ class TethersTest implements TestCase {
         slaveController, masterController.stream);
     final slaveTether = new Tether.slaveAnchor(slaveAnchor);
     await slaveTether.onConnection;
-    await completer.future;
+    await onHandlerCompletion.future;
     await slave?.call(slaveTether);
   }
 
