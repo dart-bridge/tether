@@ -157,8 +157,7 @@ class _Tether implements Tether {
 
   Future send(String key, [payload]) {
     return _messenger.send(key, {
-      'id': session.id,
-      'data': session.data,
+      'session': _messenger.serialize(session),
       'payload': _messenger.serialize(payload)
     });
   }
@@ -167,11 +166,11 @@ class _Tether implements Tether {
 
   StreamSubscription listen(String key, Function listener) {
     return _messenger.listen(key, (Map response) {
-      if (session.id != response['id'])
+      final Session remoteSession = _messenger.deserialize(response['session']);
+      if (session.id != remoteSession.id)
         throw new Exception('Not authorized');
-      final Map data = response['data'];
-      for (final key in data.keys)
-          session.data[key] = data[key];
+      for (final key in remoteSession.data.keys)
+          session.data[key] = remoteSession.data[key];
       return listener(_messenger.deserialize(response['payload']));
     });
   }

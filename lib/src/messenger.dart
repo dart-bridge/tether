@@ -54,7 +54,7 @@ class Messenger {
     _anchor.sink.add(message.serialize());
   }
 
-  void sendError(String key, error) {
+  void _sendError(String key, error) {
     _send(key, error, isError: true);
   }
 
@@ -75,7 +75,7 @@ class Messenger {
           _send(message.returnKey, returnValue);
       } catch (error) {
         if (message.hasReturnKey && isOpen)
-          sendError(message.returnKey, error);
+          _sendError(message.returnKey, error);
       }
     });
   }
