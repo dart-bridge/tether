@@ -54,7 +54,7 @@ class Messenger {
     _anchor.sink.add(message.serialize());
   }
 
-  void sendError(String key, error) {
+  void _sendError(String key, error) {
     _send(key, error, isError: true);
   }
 
@@ -71,11 +71,11 @@ class Messenger {
       final payload = deserialize(message.payload);
       try {
         final returnValue = await handler(payload);
-        if (message.hasReturnKey)
+        if (message.hasReturnKey && isOpen)
           _send(message.returnKey, returnValue);
       } catch (error) {
-        if (message.hasReturnKey)
-          sendError(message.returnKey, error);
+        if (message.hasReturnKey && isOpen)
+          _sendError(message.returnKey, error);
       }
     });
   }

@@ -7,13 +7,36 @@ import 'package:tether/protocol.dart';
 class TetherTest implements TestCase {
   Tether master;
   Tether slave;
+  StreamController masterController;
+  StreamController slaveController;
+  StreamController reconnectSlaveController;
+  StreamController reconnectMasterController;
+
 
   setUp() async {
     Messenger.serializer = new TestSerializer();
-    final masterController = new StreamController();
-    final slaveController = new StreamController();
-    master = new Tether.master(masterController, slaveController.stream);
-    slave = new Tether.slave(slaveController, masterController.stream);
+    masterController = new StreamController();
+    slaveController = new StreamController();
+    reconnectMasterController = new StreamController();
+    reconnectSlaveController = new StreamController();
+    master = new Tether.master(
+        masterController,
+        slaveController.stream,
+        reconnect: () async {
+          return new SimpleAnchor(
+              reconnectMasterController,
+              reconnectSlaveController.stream
+          );
+        });
+    slave = new Tether.slave(
+        slaveController,
+        masterController.stream,
+        reconnect: () async {
+          return new SimpleAnchor(
+              reconnectSlaveController,
+              reconnectMasterController.stream
+          );
+        });
     await Future.wait([
       master.onConnection,
       slave.onConnection
@@ -46,11 +69,40 @@ class TetherTest implements TestCase {
     });
     expect(slave.send('x'), throwsA(new isInstanceOf<TestException>()));
   }
+
+  @test
+  it_can_reconnect() async {
+    master.listen('x', (_) async {
+      masterController.close();
+      slaveController.close();
+      await null;
+    });
+    slave.send('x');
+    await Future.wait([
+      slave.onConnectionEstablished.first,
+      master.onConnectionEstablished.first
+    ]);
+    master.listen('y', (_) => _);
+    expect(await slave.send('y', 'z'), 'z');
+    expect(master.session, slave.session);
+  }
+
+  @test
+  it_shares_a_session() async {
+    master.listen('x', (_) {
+      expect(master.session.data['x'], 'y');
+    });
+
+    slave.session.data['x'] = 'y';
+
+    await slave.send('x');
+  }
 }
 
 class TestException implements Exception {}
 
 class TestSerializer implements Serializer {
+
   Object deserialize(Object object) {
     if (object == '__testException')
       return new TestException();

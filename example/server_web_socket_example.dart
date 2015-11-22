@@ -24,6 +24,7 @@ main() async {
       <!DOCTYPE html>
       <html>
         <head>
+          <button>Disconnect and reconnect</button>
           <script type='application/dart'>
             $clientScript
           </script>
@@ -35,12 +36,14 @@ main() async {
   }
 }
 
-_initTether(HttpRequest request) async {
+_initTether(HttpRequest request) {
   final tether = webSocketTether(request);
 
-  await tether.onConnection;
+  tether.onConnectionEstablished.listen((_) async {
+    print('Established connection to Tether ${tether.session.id.substring(0, 5)}...');
 
-  tether.listen('fromClient', print);
+    tether.listen('fromClient', print);
 
-  tether.send('fromServer', 'Hello from server!');
+    tether.send('fromServer', 'Hello from server!');
+  });
 }
