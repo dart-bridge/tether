@@ -86,6 +86,17 @@ class TetherTest implements TestCase {
     expect(await slave.send('y', 'z'), 'z');
     expect(master.session, slave.session);
   }
+
+  @test
+  it_shares_a_session() async {
+    master.listen('x', (_) {
+      expect(master.session.data['x'], 'y');
+    });
+
+    slave.session.data['x'] = 'y';
+
+    await slave.send('x');
+  }
 }
 
 class TestException implements Exception {}

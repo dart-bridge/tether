@@ -156,13 +156,24 @@ class _Tether implements Tether {
       : _reconnect = reconnect;
 
   Future send(String key, [payload]) {
-    return _messenger.send(key, payload);
+    return _messenger.send(key, {
+      'id': session.id,
+      'data': session.data,
+      'payload': _messenger.serialize(payload)
+    });
   }
 
   Future get(String key) => send(key);
 
   StreamSubscription listen(String key, Function listener) {
-    return _messenger.listen(key, listener);
+    return _messenger.listen(key, (Map response) {
+      if (session.id != response['id'])
+        throw new Exception('Not authorized');
+      final Map data = response['data'];
+      for (final key in data.keys)
+          session.data[key] = data[key];
+      return listener(_messenger.deserialize(response['payload']));
+    });
   }
 
   void listenOnce(String key, Function listener) {
