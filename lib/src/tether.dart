@@ -156,22 +156,32 @@ class _Tether implements Tether {
       : _reconnect = reconnect;
 
   Future send(String key, [payload]) {
-    return _messenger.send(key, {
-      'session': _messenger.serialize(session),
-      'payload': _messenger.serialize(payload)
-    });
+    return _messenger.send(key, _serializePayload(payload))
+        .then(_deserializePayload);
   }
 
   Future get(String key) => send(key);
 
+  Map _serializePayload(payload) => {
+    'session': _messenger.serialize(session),
+    'payload': _messenger.serialize(payload)
+  };
+
+  Object _deserializePayload([Map payload]) {
+    if (payload == null) return null;
+    final Session remoteSession = _messenger.deserialize(payload['session']);
+    if (session.id != remoteSession.id)
+      throw new Exception('Not authorized');
+    for (final key in remoteSession.data.keys)
+      session.data[key] = remoteSession.data[key];
+    return _messenger.deserialize(payload['payload']);
+  }
+
   StreamSubscription listen(String key, Function listener) {
-    return _messenger.listen(key, (Map response) {
-      final Session remoteSession = _messenger.deserialize(response['session']);
-      if (session.id != remoteSession.id)
-        throw new Exception('Not authorized');
-      for (final key in remoteSession.data.keys)
-          session.data[key] = remoteSession.data[key];
-      return listener(_messenger.deserialize(response['payload']));
+    return _messenger.listen(key, (Map response) async {
+      final payload = _deserializePayload(response);
+      final returnValue = await listener(payload);
+      return _serializePayload(returnValue);
     });
   }
 
